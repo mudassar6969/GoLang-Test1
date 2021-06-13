@@ -75,12 +75,25 @@ func parseFile(fileName string) []TokenData {
 		}
 
 		if tokenType == html.StartTagToken {
-			tagB, _ := tokenizer.TagName()
-			if string(tagB) == "a" {
-				_, valB, _ := tokenizer.TagAttr()
-				tokenizer.Next()
+			startTagB, _ := tokenizer.TagName()
 
-				tokenData := TokenData{Href: string(valB), Text: tokenizer.Token().Data}
+			if string(startTagB) == "a" {
+
+				_, tagValueB, _ := tokenizer.TagAttr()
+				tokenData := TokenData{}
+
+				tokenData.Href = string(tagValueB)
+				tokenizer.Next()
+				tagB, _ := tokenizer.TagName()
+
+				for string(startTagB) != string(tagB) {
+					if tokenType != html.CommentToken {
+						tokenData.Href += tokenizer.Token().Data
+					}
+					tokenType = tokenizer.Next()
+					tagB, _ = tokenizer.TagName()
+				}
+
 				tokensData = append(tokensData, tokenData)
 			}
 		}
